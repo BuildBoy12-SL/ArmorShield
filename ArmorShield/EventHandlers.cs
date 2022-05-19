@@ -32,7 +32,7 @@ namespace ArmorShield
         /// <inheritdoc cref="Events.Handlers.Player.OnItemAdded"/>
         public void OnItemAdded(ItemAddedEventArgs ev)
         {
-            if (GetBodyArmor(ev.Player) is BodyArmor bodyArmor)
+            if (TryGetBodyArmor(ev.Player, out BodyArmor bodyArmor))
                 UpdateShield(ev.Player, bodyArmor);
         }
 
@@ -45,19 +45,23 @@ namespace ArmorShield
                 ahpProcesses.Remove(ev.Item.Serial);
             }
 
-            if (GetBodyArmor(ev.Player, ev.Item) is BodyArmor bodyArmor)
+            if (TryGetBodyArmor(ev.Player, out BodyArmor bodyArmor, ev.Item))
                 UpdateShield(ev.Player, bodyArmor);
         }
 
-        private static BodyArmor GetBodyArmor(Player player, Item toExclude = null)
+        private static bool TryGetBodyArmor(Player player, out BodyArmor armor, Item toExclude = null)
         {
             foreach (Item item in player.Items)
             {
                 if (toExclude != item && item.Base is BodyArmor bodyArmor)
-                    return bodyArmor;
+                {
+                    armor = bodyArmor;
+                    return true;
+                }
             }
 
-            return null;
+            armor = null;
+            return false;
         }
 
         private void UpdateShield(Player player, BodyArmor armor)
