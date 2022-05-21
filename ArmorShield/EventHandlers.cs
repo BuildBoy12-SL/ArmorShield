@@ -39,6 +39,9 @@ namespace ArmorShield
         /// <inheritdoc cref="Events.Handlers.Player.OnRemovingItem"/>
         public void OnRemovingItem(RemovingItemEventArgs ev)
         {
+            if (ev.Item is null)
+                return;
+
             if (ahpProcesses.TryGetValue(ev.Item.Serial, out AhpStat.AhpProcess ahpProcess))
             {
                 ev.Player.ReferenceHub.playerStats.GetModule<AhpStat>().ServerKillProcess(ahpProcess.KillCode);
