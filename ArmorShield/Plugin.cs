@@ -11,6 +11,7 @@ namespace ArmorShield
     using Exiled.API.Features;
     using HarmonyLib;
     using InventorySystem;
+    using PlayerStatsSystem;
     using ServerHandlers = Exiled.Events.Handlers.Server;
 
     /// <inheritdoc />
@@ -45,6 +46,7 @@ namespace ArmorShield
             eventHandlers = new EventHandlers(this);
             Events.Handlers.Player.ItemAdded += eventHandlers.OnItemAdded;
             Events.Handlers.Player.RemovingItem += eventHandlers.OnRemovingItem;
+            PlayerStats.OnAnyPlayerDamaged += eventHandlers.OnAnyPlayerDamaged;
             base.OnEnabled();
         }
 

@@ -52,6 +52,17 @@ namespace ArmorShield
                 UpdateShield(ev.Player, bodyArmor);
         }
 
+        public void OnAnyPlayerDamaged(ReferenceHub target, DamageHandlerBase handler)
+        {
+            Player player = Player.Get(target);
+            if (!TryGetBodyArmor(player, out BodyArmor bodyArmor) ||
+                !ahpProcesses.TryGetValue(bodyArmor.ItemSerial, out AhpStat.AhpProcess ahpProcess) ||
+                !plugin.Config.ArmorShields.TryGetValue(bodyArmor.ItemTypeId, out ConfiguredAhp configuredAhp))
+                return;
+
+            ahpProcess.SustainTime = configuredAhp.Sustain;
+        }
+
         private static bool TryGetBodyArmor(Player player, out BodyArmor armor, Item toExclude = null)
         {
             foreach (Item item in player.Items)
