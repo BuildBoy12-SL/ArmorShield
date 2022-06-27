@@ -47,6 +47,7 @@ namespace ArmorShield
             Events.Handlers.Player.ItemAdded += eventHandlers.OnItemAdded;
             Events.Handlers.Player.RemovingItem += eventHandlers.OnRemovingItem;
             PlayerStats.OnAnyPlayerDamaged += eventHandlers.OnAnyPlayerDamaged;
+            Exiled.Events.Handlers.Player.Left += eventHandlers.OnLeave;
             base.OnEnabled();
         }
 
