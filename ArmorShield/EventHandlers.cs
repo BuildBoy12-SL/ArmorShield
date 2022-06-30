@@ -28,7 +28,7 @@ namespace ArmorShield
     {
         private readonly Dictionary<ushort, AhpStat.AhpProcess> ahpProcesses = new();
         private readonly Plugin plugin;
-        private CoroutineHandle coroutine;
+        CoroutineHandle coroutine;
         private Dictionary<Player, CoroutineHandle> ActiveCoroutineHandles = new Dictionary<Player, CoroutineHandle>();
         /// <summary>
         /// Initializes a new instance of the <see cref="EventHandlers"/> class.
