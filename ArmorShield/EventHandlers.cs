@@ -18,6 +18,8 @@ namespace ArmorShield
     using Exiled.API.Features.Items;
     using InventorySystem.Items.Armor;
     using PlayerStatsSystem;
+    using AdvancedHints.Enums;
+    using AdvancedHints;
 
     /// <summary>
     /// General event handlers.
@@ -82,9 +84,10 @@ namespace ArmorShield
 
         public void OnLeave(LeftEventArgs ev)
         {
-            if (ActiveCoroutineHandles.ContainsKey(ev.Player))
+            if (ActiveCoroutineHandles.TryGetValue(ev.Player, out coroutine))
             {
                 ActiveCoroutineHandles.Remove(ev.Player);
+                Timing.KillCoroutines(coroutine);
             }
         }
 
@@ -117,11 +120,11 @@ namespace ArmorShield
                 if (RegenTime <= 0 || player.Role.Type == RoleType.Spectator)
                 {
                     ActiveCoroutineHandles.Remove(player);
-                    player.ShowHint("\n\n\n\n\n\n\n\n\n\n<align=left>Regenerating!</align>", 5f);
+                    player.ShowManagedHint("<align=left>Regenerating!</align>", 1f,true, DisplayLocation.Bottom);
                     yield break;
                 }
 
-                player.ShowHint($"\n\n\n\n\n\n\n\n\n\n<align=left> AHP Regenerating in {RegenTime.ToString()}s</align>", 1f);
+                player.ShowManagedHint($"<align=left> AHP Regenerating in {RegenTime.ToString()}s</align>", 1f, true, DisplayLocation.Bottom);
                 RegenTime -= 1f;
                 yield return Timing.WaitForSeconds(1f);
             }
