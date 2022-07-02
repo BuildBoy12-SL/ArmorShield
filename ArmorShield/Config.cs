@@ -43,5 +43,7 @@ namespace ArmorShield
                 armorShields = value;
             }
         }
+        [Description("The size of the regen timer shown to the player")]
+        public string HintSize { get; set; } = "25";
     }
 }
