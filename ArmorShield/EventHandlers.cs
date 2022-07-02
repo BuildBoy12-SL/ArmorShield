@@ -5,6 +5,10 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System;
+using Exiled.Events.EventArgs;
+using MEC;
+
 namespace ArmorShield
 {
     using System.Collections.Generic;
@@ -14,6 +18,8 @@ namespace ArmorShield
     using Exiled.API.Features.Items;
     using InventorySystem.Items.Armor;
     using PlayerStatsSystem;
+    using AdvancedHints.Enums;
+    using AdvancedHints;
 
     /// <summary>
     /// General event handlers.
@@ -22,7 +28,8 @@ namespace ArmorShield
     {
         private readonly Dictionary<ushort, AhpStat.AhpProcess> ahpProcesses = new();
         private readonly Plugin plugin;
-
+        CoroutineHandle coroutine;
+        private Dictionary<Player, CoroutineHandle> ActiveCoroutineHandles = new Dictionary<Player, CoroutineHandle>();
         /// <summary>
         /// Initializes a new instance of the <see cref="EventHandlers"/> class.
         /// </summary>
@@ -46,6 +53,11 @@ namespace ArmorShield
             {
                 ev.Player.ReferenceHub.playerStats.GetModule<AhpStat>().ServerKillProcess(ahpProcess.KillCode);
                 ahpProcesses.Remove(ev.Item.Serial);
+                if (ActiveCoroutineHandles.TryGetValue(ev.Player, out coroutine))
+                {
+                    Timing.KillCoroutines(coroutine);
+                    ev.Player.ShowHint("",0.01f); //Intended to clear the timer hint.
+                }
             }
 
             if (TryGetBodyArmor(ev.Player, out BodyArmor bodyArmor, ev.Item))
@@ -59,8 +71,24 @@ namespace ArmorShield
                 !ahpProcesses.TryGetValue(bodyArmor.ItemSerial, out AhpStat.AhpProcess ahpProcess) ||
                 !plugin.Config.ArmorShields.TryGetValue(bodyArmor.ItemTypeId, out ConfiguredAhp configuredAhp))
                 return;
-
             ahpProcess.SustainTime = configuredAhp.Sustain;
+            if (ActiveCoroutineHandles.TryGetValue(player, out coroutine))
+            {
+                Timing.KillCoroutines(coroutine);
+                ActiveCoroutineHandles.Remove(player);
+            }
+
+            coroutine = Timing.RunCoroutine(RegenTimer(player, configuredAhp.Sustain));
+            ActiveCoroutineHandles.Add(player, coroutine);
+        }
+
+        public void OnLeave(LeftEventArgs ev)
+        {
+            if (ActiveCoroutineHandles.TryGetValue(ev.Player, out coroutine))
+            {
+                ActiveCoroutineHandles.Remove(ev.Player);
+                Timing.KillCoroutines(coroutine);
+            }
         }
 
         private static bool TryGetBodyArmor(Player player, out BodyArmor armor, Item toExclude = null)
@@ -82,6 +110,24 @@ namespace ArmorShield
         {
             if (!ahpProcesses.ContainsKey(armor.ItemSerial) && plugin.Config.ArmorShields.TryGetValue(armor.ItemTypeId, out ConfiguredAhp configuredAhp))
                 ahpProcesses.Add(armor.ItemSerial, configuredAhp.AddTo(player));
+        }
+
+        public IEnumerator<float> RegenTimer(Player player, float RegenTime)
+        {
+            for (;;)
+            {
+
+                if (RegenTime <= 0 || player.Role.Type == RoleType.Spectator)
+                {
+                    ActiveCoroutineHandles.Remove(player);
+                    player.ShowManagedHint($"<size={plugin.Config.HintSize}><align=left>Regenerating!</align></size>", 1.5f, true, DisplayLocation.Bottom);;
+                    yield break;
+                }
+
+                player.ShowManagedHint($"<size={plugin.Config.HintSize}><align=left> AHP Regenerating in {RegenTime.ToString()}s</align></size>", 1.5f, true, DisplayLocation.Bottom);
+                RegenTime -= 1f;
+                yield return Timing.WaitForSeconds(1f);
+            }
         }
     }
 }
