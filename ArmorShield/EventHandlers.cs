@@ -120,11 +120,11 @@ namespace ArmorShield
                 if (RegenTime <= 0 || player.Role.Type == RoleType.Spectator)
                 {
                     ActiveCoroutineHandles.Remove(player);
-                    player.ShowManagedHint("<align=left>Regenerating!</align>", 1.1f,true, DisplayLocation.Bottom);
+                    player.ShowManagedHint($"<size={plugin.Config.HintSize}><align=left>Regenerating!</align></size>", 1.5f, true, DisplayLocation.Bottom);;
                     yield break;
                 }
 
-                player.ShowManagedHint($"<align=left> AHP Regenerating in {RegenTime.ToString()}s</align>", 1.1f, true, DisplayLocation.Bottom);
+                player.ShowManagedHint($"<size={plugin.Config.HintSize}><align=left> AHP Regenerating in {RegenTime.ToString()}s</align></size>", 1.5f, true, DisplayLocation.Bottom);
                 RegenTime -= 1f;
                 yield return Timing.WaitForSeconds(1f);
             }
